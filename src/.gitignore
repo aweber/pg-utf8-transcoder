@@ -1,0 +1,5 @@
+.deps/
+Makefile
+pg_chardetect.c
+testlibpq1.c
+testlibpq3.c
