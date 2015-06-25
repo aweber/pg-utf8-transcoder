@@ -1,6 +1,6 @@
 # db-utf8-transcoder
 
-### C program to transcode db char-based data to UTF8.
+### A C program to transcode PostgreSQL string data to UTF8.
 
 This project is targeted for PostgreSQL 9.0 running on Ubuntu 10.0.4 LTS.  Ports to other PostgreSQL versions and OS's are welcome!
 
