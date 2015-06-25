@@ -49,7 +49,8 @@ zcat /tmp/transcoder-runs/<table>.err.gz | tail -f
 
 #### Build and install ICU libraries and header files
 
-The ICU libraries will be installed in /usr/local/lib.  The header files will be installed in /usr/local/include.
+To use the latest ICU libraries following the directions below.  The ICU libraries will be installed in /usr/local/lib.  The header files will be installed in /usr/local/include.
+
 
 ```bash
 wget http://download.icu-project.org/files/icu4c/54.1/icu4c-54_1-src.tgz
@@ -59,6 +60,12 @@ mkdir -p ./data/out/build/icudt54l
 mkdir -p ./data/out/tmp
 ./runConfigureICU --enable-debug Linux/gcc
 make && sudo make install
+```
+
+You can also simply install the required packages, but the transcoder was built and tested using ICU 54.1:
+
+```bash
+sudo apt-get -y apt-get install libicu42 libicu-dev libicu42-dbg
 ```
 
 #### Build db-ut8-transcode executable
@@ -79,7 +86,7 @@ Update library path
 sudo ldconfig
 ```
 
-Build and install transcoder executable.  The executable will be in /usr/local/bin
+Build and install transcoder executable.  The executable will be in /usr/local/bin.
 
 ```bash
 mkdir pg-utf8-transcoder
@@ -87,6 +94,16 @@ cd pg-utf8-transcoder
 git clone https://github.com/aweber/pg-utf8-transcoder.git
 ./configure
 make clean && make && sudo make install
+```
+
+##### Install the db functions
+
+Install the db functions used by the transcoder into the target db.
+
+```bash
+sudo su - postgres
+cd pg-utf8-transcoder/sql
+for f in $(ls -1 *.sql); do psql <targetdb> -f $f; done
 ```
 
 ##### Testing
@@ -97,7 +114,7 @@ Create a test database.
 sudo su - postgres
 createdb test
 ```
-Install the db functions used by transcoder
+Install the db functions used by transcoder.
 
 ```bash
 sudo su - postgres
@@ -108,7 +125,7 @@ for f in $(ls -1 *.sql); do psql test -f $f; done
 Install test set
 
 ```bash
-cd pg-utf8-transcoder/test
+cd pg-utf8-transcoder/test-data
 zcat test.dump_p.gz | psql test
 ```
 
