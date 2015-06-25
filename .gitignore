@@ -1,0 +1,44 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+#autoconf & automake artifacts
+Doxyfile.in.tc
+Makefile
+Makefile.in
+autom4te.cache/
+bin/*
+config.h.in
+config.log
+config.status
+config/*
+configure
+depcomp
+doc/
+html/
+install-sh
+latex/
+src/Makefile.in
+src/tags
+src/transcoder
+transcoder-defs.mk

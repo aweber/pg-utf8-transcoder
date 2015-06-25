@@ -1,6 +1,8 @@
-# db-utf8-transcode
+# db-utf8-transcoder
 
 ### C program to transcode db char-based data to UTF8.
+
+This project is targeted for PostgreSQL 9.0 running on Ubuntu 10.0.4 LTS.  Ports to other PostgreSQL versions and OS's are welcome!
 
 The transcoder runs against one table at a time.  It does the following things:
 
@@ -13,18 +15,17 @@ The transcoder runs against one table at a time.  It does the following things:
 7. For each character-based column in the row:
   a. detects the encoding, if it can,
   b. converts the value from the detected encoding to UTF8.  If the encoding cannot be determined for a particular character string the original bytestream is returned.
-
 8. Writes the converted and/or unconverted data back to the same row.
 9. Logs the conversion once the update is confirmed.
 10. Cleans up memory and database connections, and exits.
 
 Note steps 6, 7 and 8 are not transactional, as they are running on two different connections and the SELECT of the values in step 6 does not use a READ FOR UPDATE lock.  This is purposeful, so the transcoder doesn’t block other activity in the database.  The (very, very) small risk here is a row could be updated between steps 6 and 8, and the update could be lost when the row is overwritten in step 8.
 
-Any variability in rows converted per second for different tables (or even the same table) is due to at least three conditions:
+Variability in the number of rows converted per second for different tables (or even the same table) is due to at least three conditions:
 
-1. number of columns to convert
-2. size of data in the columns to convert
-3. concurrent load on the database and host machine
+1. the number of columns to convert,
+2. the size of data in the columns to convert,
+3. and the concurrent load on the database and host machine.
 
 ### DBA note!
 
@@ -47,6 +48,8 @@ zcat /tmp/transcoder-runs/<table>.err.gz | tail -f
 ### To build:
 
 #### Build and install ICU libraries and header files
+
+The ICU libraries will be installed in /usr/local/lib.  The header files will be installed in /usr/local/include.
 
 ```bash
 wget http://download.icu-project.org/files/icu4c/54.1/icu4c-54_1-src.tgz
@@ -79,53 +82,42 @@ sudo ldconfig
 Build and install transcoder executable.  The executable will be in /usr/local/bin
 
 ```bash
-git clone
-cd /opt/git/db-utf8-transcode
+mkdir pg-utf8-transcoder
+cd pg-utf8-transcoder
+git clone https://github.com/aweber/pg-utf8-transcoder.git
+./configure
 make clean && make && sudo make install
 ```
 
 ##### Testing
 
-Build app db
+Create a test database.
 
 ```bash
 sudo su - postgres
-cd /opt/git/initdb_scripts
-./bin/init_db.sh -d app
+createdb test
 ```
-
-
-Run tests; all tests should pass
-
-```bash
-make requirements test
-```
-
 Install the db functions used by transcoder
 
 ```bash
 sudo su - postgres
-cd /opt/git/db-utf8-transcode/sql
-psql app -f zip\(anyarray\,anyarray\).sql
-psql app -f quoted_elements\(anyarray\).sql
-psql app -f get_shortest_unique_key\(name\,name\,name\[\]\,name\[\]\).sql
-psql app -f get_min_shortest_unique_key_values.sql
-psql app -f get_next_shortest_unique_key_values.sql
+cd pg-utf8-transcoder/sql
+for f in $(ls -1 *.sql); do psql test -f $f; done
 ```
 
 Install test set
 
 ```bash
-cd /opt/git/chardet-project/pg_chardetect/test
-zcat cust_mail_list_test.dump_p.gz | psql app
+cd pg-utf8-transcoder/test
+zcat test.dump_p.gz | psql test
 ```
 
-Convert the data in cust_mail_list_test
+Convert the data in text
 
 ```bash
-transcoder --dsn='dbname=app' \
+transcoder --dsn='dbname=test' \
           --schema=public \
-          --table=cust_mail_list_test \
+          --table=test \
           2> /tmp/transcoder-test.err \
           1> /tmp/transcoder-test.out
 ```
