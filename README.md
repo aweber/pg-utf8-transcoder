@@ -27,7 +27,13 @@ Variability in the number of rows converted per second for different tables (or 
 2. the size of data in the columns to convert,
 3. and the concurrent load on the database and host machine.
 
-### DBA note!
+### DANGER, WILL ROBINSON! DANGER!
+
+CHARACTER SET DETECTION IS NOT NECESSARILY DETERMINISTIC, PARTICULARLY FOR LATIN-BASED LANGUAGES. THE DETECTOR MAY MAKE THE WRONG GUESS AND TRANSCODE YOUR DATA INCORRECTLY! BE SURE TO FOLLOW PRUDENT PROCEDURES TO PROTECT YOUR DATA, INCLUDING BUT NOT LIMITED TO BACKUPS, HISTORY TABLES, AND THROWAWAY DATABASES!
+
+<p align="center"><b>YOU HAVE BEEN WARNED!</b></p>
+
+### DBA note:
 
 Watch for enforced autovacuums due to wraparound transaction protection when updating large numbers of rows.  Also concurrently reindex any indexed columns that may have been updated after the run completes.
 
@@ -68,7 +74,7 @@ You can also simply install the required packages, but the transcoder was built 
 sudo apt-get -y apt-get install libicu42 libicu-dev libicu42-dbg
 ```
 
-#### Build db-ut8-transcode executable
+#### Build db-utf8-transcode executable
 
 Install necessary PostgreSQL packages for build
 
@@ -122,14 +128,14 @@ cd pg-utf8-transcoder/sql
 for f in $(ls -1 *.sql); do psql test -f $f; done
 ```
 
-Install test set
+Install the test data set.
 
 ```bash
 cd pg-utf8-transcoder/test-data
 zcat test.dump_p.gz | psql test
 ```
 
-Convert the data in text
+Convert the data in text.
 
 ```bash
 transcoder --dsn='dbname=test' \
